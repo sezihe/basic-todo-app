@@ -3,6 +3,7 @@ package com.danielezihe.controllers;
 import at.favre.lib.crypto.bcrypt.BCrypt;
 import com.danielezihe.entities.ToDoEntity;
 import com.danielezihe.entities.UserEntity;
+import com.danielezihe.entities.util.UserEntityChangeableProperties;
 import org.apache.commons.collections4.OrderedMap;
 import org.apache.commons.collections4.bidimap.TreeBidiMap;
 import org.apache.commons.collections4.map.LinkedMap;
@@ -37,11 +38,45 @@ public class UserController {
         if (user == null)
             return (T) "INVALID USER";
 
-        if (!verifyPassword(password, user.password())) {
+        if (!verifyPassword(password, user.getPassword())) {
             return (T) "INCORRECT DETAILS";
         } else {
             return (T) user;
         }
+    }
+
+    public UserEntity updateUser(String userEmail, String data, UserEntityChangeableProperties property) {
+        UserEntity user = deleteUser(userEmail);
+
+        switch (property) {
+            case NAME -> user.setName(data);
+            case EMAIL -> {
+                if(users.get(data) == null)
+                    user.setEmail(data);
+                else
+                    throw new UnsupportedOperationException("User with email: " + data + " already exists");
+            }
+            default -> throw new IllegalStateException("Unexpected value: " + property);
+        }
+
+        users.put(user.getEmail(), user);
+        return user;
+    }
+
+    public UserEntity updateUser(String userEmail, String oldPassword, String newPassword) throws IllegalAccessException {
+        var response = login(userEmail, oldPassword);
+
+        if(response instanceof UserEntity) {
+            String hashedNewPassword = hashPassword(newPassword);
+            ((UserEntity) response).setPassword(hashedNewPassword);
+
+            return (UserEntity) response;
+        } else
+            throw new IllegalAccessException("User Email or Password is incorrect!");
+    }
+
+    private UserEntity deleteUser(String userEmail) {
+        return users.remove(userEmail);
     }
 
 
