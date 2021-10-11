@@ -31,6 +31,7 @@ public class Main {
     public static final int FIVE = 5;
     public static final int SIX = 6;
     public static final int SEVEN = 7;
+    public static final int EIGHT = 8;
 
     private static final UserController userController = UserController.getInstance();
 
@@ -331,6 +332,52 @@ public class Main {
         }
     }
 
+    static void handleUpdateTodo(UserEntity user) {
+        ToDoController mTodoController = user.getMyTodoController();
+
+        println("Kindly enter the Todo ID(located beside the todo), Tag and the update text all seperated by '::'. Eg 1::Title::Attend Gym Class");
+        println("""
+                Available Tags:
+                Title - Updates the title of the Todo.
+                Des - Updates the Description of the Todo.
+                """);
+
+        String[] data = scanner.nextLine().split("::");
+        if(data.length != 3)
+            println("Please check you input and try again");
+        else {
+            int todoId = Integer.parseInt(data[0]);
+            String tag = data[1];
+            String updateText = data[2];
+
+            try {
+                switch (tag) {
+                    case "Title" -> {
+                        if(updateText.isBlank())
+                            println("Title cannot be blank!");
+                        else if(updateText.length() < 5)
+                            println("Title must be at least 5 characters!");
+                        else {
+                            mTodoController.updateTodo(todoId, updateText, TodoEntityProperties.TITLE);
+                            println("Todo Title has been updated successfully!");
+                        }
+                    }
+                    case "Des" -> {
+                        if(updateText.isBlank())
+                            println("Description cannot be blank!");
+                        else {
+                            mTodoController.updateTodo(todoId, updateText, TodoEntityProperties.DESCRIPTION);
+                            println("Todo Description has been updated successfully");
+                        }
+                    }
+                    default -> println("Tag not found. Please try again");
+                }
+            } catch (UnsupportedOperationException e) {
+                println(e.getMessage());
+            }
+        }
+    }
+
     static void handleToggleTodoStatus(UserEntity user) {
         while (true) {
             ToDoController mTodoController = user.getMyTodoController();
@@ -386,8 +433,12 @@ public class Main {
                 case THREE -> handleViewAllActiveTodos(user);
                 case FOUR -> handleViewAllCompletedTodos(user);
                 case FIVE -> handleFindTodo(user);
-                case SIX -> handleUpdateDetails(user);
-                case SEVEN -> {
+                case SIX -> {
+                    handleViewAllTodos(user);
+                    handleUpdateTodo(user);
+                }
+                case SEVEN -> handleUpdateDetails(user);
+                case EIGHT -> {
                     isRunning = false;
                     handleLogout();
                 }
@@ -418,8 +469,9 @@ public class Main {
                 "Press 3 to view all Active Todos\n" +
                 "Press 4 to view all Completed Todos\n" +
                 "Press 5 to search for a Todo\n" +
-                "Press 6 to edit/update your details\n" +
-                "Press 7 to logout.");
+                "Press 6 to edit/update a Todo\n" +
+                "Press 7 to edit/update your details\n" +
+                "Press 8 to logout.");
     }
 
     static void printFindTodoPrompt() {
