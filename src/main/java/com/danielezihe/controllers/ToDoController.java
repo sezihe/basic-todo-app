@@ -9,9 +9,6 @@ import org.apache.commons.collections4.OrderedMap;
 import org.apache.commons.collections4.map.LinkedMap;
 import org.apache.commons.io.IOCase;
 
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -31,6 +28,12 @@ public final class ToDoController {
         this.todos = todos;
     }
 
+    /**
+     * Creates and adds a new Todo to the todos BidiMap.
+     * @param title Title of the todo
+     * @param description Description of the Todo
+     * @return the just created {@link ToDoEntity} todo
+     */
     public ToDoEntity createNewTodo(String title, String description) {
         int id = todos.size() + 1;
         // long createdAt = Timestamp.from(Instant.now()).getTime();
@@ -44,6 +47,10 @@ public final class ToDoController {
         return newTodo;
     }
 
+    /**
+     * Gets all active Todos from the todos BidiMap
+     * @return an {@link OrderedMap} containing all active Todos
+     */
     public OrderedMap<Integer, ToDoEntity> getAllActiveTodos() {
         OrderedMap<Integer, ToDoEntity> activeTodos = new LinkedMap<>();
         todosList = new ArrayList<>(todos.values());
@@ -57,6 +64,10 @@ public final class ToDoController {
         return activeTodos;
     }
 
+    /**
+     * Gets all completed Todos from the todos BidiMap
+     * @return an {@link OrderedMap} containing all completed Todos
+     */
     public OrderedMap<Integer, ToDoEntity> getAllCompletedTodos() {
         OrderedMap<Integer, ToDoEntity> completedTodos = new LinkedMap<>();
         todosList = new ArrayList<>(todos.values());
@@ -70,6 +81,14 @@ public final class ToDoController {
         return completedTodos;
     }
 
+    /**
+     * Finds a todo from the todos BidiMap. Searches only the Todo Id, Title & Description properties
+     * @param query Query text to be searched
+     * @param property Todo Property to be searched
+     * @param useStrict boolean flag to decide how the search should be performed
+     * @return an {@link OrderedMap} containing the query result
+     * @throws IllegalStateException if a User inputs an unexpected value for @Param(property)
+     */
     public OrderedMap<Integer, ToDoEntity> findTodo(String query, TodoEntityProperties property, boolean useStrict) {
         OrderedMap<Integer, ToDoEntity> queryTodos = new LinkedMap<>();
         Stream<ToDoEntity> todosStream;
@@ -105,6 +124,12 @@ public final class ToDoController {
         return queryTodos;
     }
 
+    /**
+     * Finds a todo from the todos BidiMap. Searches only the Todo CreatedAt property
+     * @param query Query text to be searched
+     * @param queryType Date format/type the @param(query) is in.
+     * @return an {@link OrderedMap} containing the query result
+     */
     public OrderedMap<Integer, ToDoEntity> findTodo(String query, CreatedAtQueryTypes queryType) {
         OrderedMap<Integer, ToDoEntity> queryTodos = new LinkedMap<>();
         Stream<ToDoEntity> todosStream;
@@ -137,8 +162,17 @@ public final class ToDoController {
         return queryTodos;
     }
 
+    /**
+     * Updates a Todo Id, Title & Description Properties
+     * @param todoId The id of the Todo to be updated
+     * @param data The Data to be saved
+     * @param property The property of the Todo that would be updated
+     */
     public void updateTodo(int todoId, String data, TodoEntityProperties property) {
         ToDoEntity todo = deleteTodo(todoId);
+
+        if(todo == null)
+            throw new UnsupportedOperationException("Todo with id '" + todoId + "' not found");
 
         switch (property) {
             case TITLE -> todo.setTitle(data);
@@ -148,6 +182,11 @@ public final class ToDoController {
         todos.put(todoId, todo);
     }
 
+    /**
+     * Updates a Todo Status.
+     * @param todoId The id of the Todo to be updated
+     * @param status The new Status to be saved
+     */
     public void updateTodo(int todoId, ToDoStatus status) {
         ToDoEntity todo = deleteTodo(todoId);
 
@@ -156,18 +195,37 @@ public final class ToDoController {
         todos.put(todoId, todo);
     }
 
-    public ToDoEntity deleteTodo(int todoId) {
+    /**
+     * Removes a {@link ToDoEntity} user from the todos BidiMap.
+     * @param todoId id of the Todo to be removed
+     * @return the recently deleted {@link ToDoEntity} todo
+     */
+    private ToDoEntity deleteTodo(int todoId) {
         return todos.remove(todoId);
     }
 
+    /**
+     * Gets all Todos from the todos BidiMap
+     * @return a Stream of todos BidiMap entry set.
+     */
     public Stream<Map.Entry<Integer, ToDoEntity>> getAllTodos() {
         return todos.entrySet().stream().sorted(Map.Entry.comparingByValue());
     }
 
+    /**
+     * Gets/Finds a Todo using it's id
+     * @param id The id of the Todo to be gotten/found
+     * @return The {@link ToDoEntity} todo found (null if Todo does not exist)
+     */
     public ToDoEntity getTodo(int id) {
         return todos.get(id);
     }
 
+    /**
+     * Converts Todo CreatedAt milliseconds to a formatted Long Date and Time
+     * @param milliseconds The datetime in milliseconds to be converted
+     * @return A String containing the formatted Date and Time
+     */
     public String getCreatedAtDateTimeLong(long milliseconds) {
         String fullDate = getDateString(milliseconds, CreatedAtQueryTypes.FULL_DATE);
         String time = getDateString(milliseconds, CreatedAtQueryTypes.TIME);
@@ -175,6 +233,11 @@ public final class ToDoController {
         return fullDate + " " + time;
     }
 
+    /**
+     * Converts Todo CreatedAt milliseconds to a formatted Short Date and Time
+     * @param milliseconds The datetime in milliseconds to be converted
+     * @return A String containing the formatted Date and Time
+     */
     private String getCreatedAtDateTimeShort(long milliseconds) {
         String shortDate = getDateString(milliseconds, CreatedAtQueryTypes.SHORT_DATE);
         String time = getDateString(milliseconds, CreatedAtQueryTypes.TIME);
@@ -182,6 +245,12 @@ public final class ToDoController {
         return shortDate + " " + time;
     }
 
+    /**
+     * Converts milliseconds to a formatted Date or Time
+     * @param milliseconds The datetime in Milliseconds to be converted
+     * @param queryType The format the milliseconds should be converted to.
+     * @return A String containing the formatted Date Or Time
+     */
     private String getDateString(long milliseconds, CreatedAtQueryTypes queryType) {
         //SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm");
         StringBuilder stringBuilder = new StringBuilder();
