@@ -4,4 +4,5 @@ public enum CreatedAtQueryTypes {
     FULL_DATE,
     SHORT_DATE,
     TIME,
+    DATE_TIME,
 }

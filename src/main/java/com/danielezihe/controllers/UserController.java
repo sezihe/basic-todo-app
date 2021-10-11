@@ -8,17 +8,22 @@ import org.apache.commons.collections4.OrderedMap;
 import org.apache.commons.collections4.bidimap.TreeBidiMap;
 import org.apache.commons.collections4.map.LinkedMap;
 
+import java.util.Collections;
+import java.util.Map;
+import java.util.stream.Stream;
+
 /**
  * @author EZIHE S. DANIEL
  * CreatedAt: 09/10/2021
  */
 public class UserController {
-    private OrderedMap<String, UserEntity> users;
+    private final OrderedMap<String, UserEntity> users;
     private static UserController userController;
 
     private UserController() {
         users = new LinkedMap<>();
     }
+
 
     public UserEntity save(String name, String email, String password) {
         String hashedPassword = hashPassword(password);
@@ -27,7 +32,10 @@ public class UserController {
         ToDoController toDoController = new ToDoController(new TreeBidiMap<>());
         UserEntity newUser = new UserEntity(id, name, email, hashedPassword, toDoController);
 
-        users.put(email, newUser);
+        if(users.get(email) == null)
+            users.put(email, newUser);
+        else
+            throw new UnsupportedOperationException("User with email: " + email + " already exists");
 
         return newUser;
     }
@@ -72,7 +80,7 @@ public class UserController {
 
             return (UserEntity) response;
         } else
-            throw new IllegalAccessException("User Email or Password is incorrect!");
+            throw new IllegalAccessException("Old Password is incorrect!");
     }
 
     private UserEntity deleteUser(String userEmail) {
@@ -88,6 +96,9 @@ public class UserController {
         return BCrypt.verifyer().verify(password.toCharArray(), hashedPassword).verified;
     }
 
+    public Stream<OrderedMap.Entry<String, UserEntity>> getAllUsersStream() {
+        return users.entrySet().stream().sorted(OrderedMap.Entry.comparingByValue());
+    }
 
     public static UserController getInstance() {
         if(userController == null) {

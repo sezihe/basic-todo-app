@@ -4,5 +4,4 @@ public enum TodoEntityProperties {
     ID,
     TITLE,
     DESCRIPTION,
-    CREATED_AT
 }

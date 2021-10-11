@@ -55,6 +55,9 @@ public class ToDoEntity implements Comparable<ToDoEntity> {
 
     @Override
     public int compareTo(ToDoEntity o) {
-        return o.id;
+        if(this.getStatus() == ToDoStatus.ACTIVE && o.getStatus() == ToDoStatus.COMPLETED)
+            return -1;
+        else
+            return 1;
     }
 }

@@ -6,12 +6,12 @@ import com.danielezihe.controllers.ToDoController;
  * @author EZIHE S. DANIEL
  * CreatedAt: 09/10/2021
  */
-public final class UserEntity {
+public final class UserEntity implements Comparable<UserEntity> {
     private final int id;
     private String name;
     private String email;
-    private String password;
-    private final ToDoController myTodoController;
+    private transient String password;
+    private final transient ToDoController myTodoController;
 
     public UserEntity(int id, String name, String email, String password, ToDoController myTodoController) {
         this.id = id;
@@ -39,5 +39,31 @@ public final class UserEntity {
 
     public String getPassword() {
         return password;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public ToDoController getMyTodoController() {
+        return myTodoController;
+    }
+
+    @Override
+    public int compareTo(UserEntity o) {
+        return Integer.compare(this.getId(), o.getId());
+    }
+
+    @Override
+    public String toString() {
+        return "User {" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", email='" + email + '\'' +
+                '}';
     }
 }

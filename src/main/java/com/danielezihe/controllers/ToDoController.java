@@ -29,10 +29,9 @@ public final class ToDoController {
 
     public ToDoController(BidiMap<Integer, ToDoEntity> todos) {
         this.todos = todos;
-        todosList = new ArrayList<>(todos.values());
     }
 
-    public ToDoEntity createNewTodo(String title, String description, String status) {
+    public ToDoEntity createNewTodo(String title, String description) {
         int id = todos.size() + 1;
         // long createdAt = Timestamp.from(Instant.now()).getTime();
         Calendar calendar = Calendar.getInstance(Locale.UK);
@@ -47,8 +46,9 @@ public final class ToDoController {
 
     public OrderedMap<Integer, ToDoEntity> getAllActiveTodos() {
         OrderedMap<Integer, ToDoEntity> activeTodos = new LinkedMap<>();
+        todosList = new ArrayList<>(todos.values());
 
-        todosList.stream().filter(o -> o.getStatus().equals(ToDoStatus.ACTIVE)).forEach(
+        todosList.stream().filter(o -> o.getStatus() == ToDoStatus.ACTIVE).forEach(
                 o -> {
                     activeTodos.put(o.getId(), o);
                 }
@@ -59,8 +59,9 @@ public final class ToDoController {
 
     public OrderedMap<Integer, ToDoEntity> getAllCompletedTodos() {
         OrderedMap<Integer, ToDoEntity> completedTodos = new LinkedMap<>();
+        todosList = new ArrayList<>(todos.values());
 
-        todosList.stream().filter(todo -> todo.getStatus().equals(ToDoStatus.COMPLETED)).forEach(
+        todosList.stream().filter(todo -> todo.getStatus() == ToDoStatus.COMPLETED).forEach(
                 todo -> {
                     completedTodos.put(todo.getId(), todo);
                 }
@@ -69,37 +70,45 @@ public final class ToDoController {
         return completedTodos;
     }
 
-    public OrderedMap<Integer, ToDoEntity> findTodo(String query, TodoEntityProperties property) {
-        OrderedMap<Integer, ToDoEntity> todos = new LinkedMap<>();
+    public OrderedMap<Integer, ToDoEntity> findTodo(String query, TodoEntityProperties property, boolean useStrict) {
+        OrderedMap<Integer, ToDoEntity> queryTodos = new LinkedMap<>();
         Stream<ToDoEntity> todosStream;
+        todosList = new ArrayList<>(todos.values());
 
         switch (property) {
             case ID -> {
                 ToDoEntity todo = this.todos.get(Integer.parseInt(query));
-                todos.put(todo.getId(), todo);
-                return todos;
+                queryTodos.put(todo.getId(), todo);
+                return queryTodos;
             }
             case TITLE -> {
-                todosStream = todosList.stream().filter(todo -> IOCase.INSENSITIVE.checkEquals(todo.getTitle(), query));
+                if(useStrict)
+                    todosStream = todosList.stream().filter(todo -> IOCase.INSENSITIVE.checkEquals(todo.getTitle(), query));
+                else
+                    todosStream = todosList.stream().filter(todo -> todo.getTitle().toLowerCase().contains(query.toLowerCase()));
             }
             case DESCRIPTION -> {
-                todosStream = todosList.stream().filter(todo -> IOCase.INSENSITIVE.checkEquals(todo.getDescription(), query));
+                if(useStrict)
+                    todosStream = todosList.stream().filter(todo -> IOCase.INSENSITIVE.checkEquals(todo.getDescription(), query));
+                else
+                    todosStream = todosList.stream().filter(todo -> todo.getDescription().toLowerCase().contains(query.toLowerCase()));
             }
             default -> throw new IllegalStateException("Unexpected value: " + property);
         }
 
         todosStream.forEach(
                 todo -> {
-                    todos.put(todo.getId(), todo);
+                    queryTodos.put(todo.getId(), todo);
                 }
         );
 
-        return todos;
+        return queryTodos;
     }
 
     public OrderedMap<Integer, ToDoEntity> findTodo(String query, CreatedAtQueryTypes queryType) {
-        OrderedMap<Integer, ToDoEntity> todos = new LinkedMap<>();
+        OrderedMap<Integer, ToDoEntity> queryTodos = new LinkedMap<>();
         Stream<ToDoEntity> todosStream;
+        todosList = new ArrayList<>(todos.values());
 
         switch (queryType) {
             case FULL_DATE -> {
@@ -111,18 +120,21 @@ public final class ToDoController {
             case TIME -> {
                 todosStream = todosList.stream().filter(o -> IOCase.INSENSITIVE.checkEquals(query, getDateString(o.getCreatedAt(), CreatedAtQueryTypes.TIME)));
             }
+            case DATE_TIME -> {
+                todosStream = todosList.stream().filter(o -> IOCase.INSENSITIVE.checkEquals(query, getCreatedAtDateTimeShort(o.getCreatedAt())));
+            }
             default -> {
-                return todos;
+                return queryTodos;
             }
         }
 
         todosStream.forEach(
                 o -> {
-                    todos.put(o.getId(), o);
+                    queryTodos.put(o.getId(), o);
                 }
         );
 
-        return todos;
+        return queryTodos;
     }
 
     public void updateTodo(int todoId, String data, TodoEntityProperties property) {
@@ -148,10 +160,27 @@ public final class ToDoController {
         return todos.remove(todoId);
     }
 
-    public BidiMap<Integer, ToDoEntity> getTodos() {
-        return todos;
+    public Stream<Map.Entry<Integer, ToDoEntity>> getAllTodos() {
+        return todos.entrySet().stream().sorted(Map.Entry.comparingByValue());
     }
 
+    public ToDoEntity getTodo(int id) {
+        return todos.get(id);
+    }
+
+    public String getCreatedAtDateTimeLong(long milliseconds) {
+        String fullDate = getDateString(milliseconds, CreatedAtQueryTypes.FULL_DATE);
+        String time = getDateString(milliseconds, CreatedAtQueryTypes.TIME);
+
+        return fullDate + " " + time;
+    }
+
+    private String getCreatedAtDateTimeShort(long milliseconds) {
+        String shortDate = getDateString(milliseconds, CreatedAtQueryTypes.SHORT_DATE);
+        String time = getDateString(milliseconds, CreatedAtQueryTypes.TIME);
+
+        return shortDate + " " + time;
+    }
 
     private String getDateString(long milliseconds, CreatedAtQueryTypes queryType) {
         //SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm");
