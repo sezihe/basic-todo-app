@@ -299,7 +299,7 @@ public class Main {
                         else if (newName.equals(user.getName()))
                             println("Please enter a NEW name!");
                         else {
-                            UserEntity updatedUser = userController.updateUser(userEmail, newName, UserEntityChangeableProperties.NAME);
+                            userController.updateUser(userEmail, newName, UserEntityChangeableProperties.NAME);
                             println("Name updated!\n\n-NEW DETAILS");
                             println(user.toString());
                         }
@@ -556,11 +556,11 @@ public class Main {
         return stringBuilder;
     }
 
-    static StringBuilder appendLine(StringBuilder builder, String line) {
-        return builder.append(line).append("\n");
+    static void appendLine(StringBuilder builder, String line) {
+        builder.append(line).append("\n");
     }
 
-    static StringBuilder appendTab(StringBuilder builder, String line) {
-        return builder.append("\t").append(line).append("\n");
+    static void appendTab(StringBuilder builder, String line) {
+        builder.append("\t").append(line).append("\n");
     }
 }
