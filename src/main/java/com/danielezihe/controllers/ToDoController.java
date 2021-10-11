@@ -200,7 +200,7 @@ public final class ToDoController {
      * @param todoId id of the Todo to be removed
      * @return the recently deleted {@link ToDoEntity} todo
      */
-    private ToDoEntity deleteTodo(int todoId) {
+    public ToDoEntity deleteTodo(int todoId) {
         return todos.remove(todoId);
     }
 

@@ -32,6 +32,7 @@ public class Main {
     public static final int SIX = 6;
     public static final int SEVEN = 7;
     public static final int EIGHT = 8;
+    public static final int NINE = 9;
 
     private static final UserController userController = UserController.getInstance();
 
@@ -399,6 +400,19 @@ public class Main {
         }
     }
 
+    static void handleDeleteATodo(UserEntity user) {
+        ToDoController mTodoController = user.getMyTodoController();
+
+        println("Kindly enter the Todo Id(located beside the todo)");
+
+        int todoId = scanner.nextInt();
+
+        if(mTodoController.deleteTodo(todoId) == null)
+            println("Todo with id '" + todoId + "' not found!");
+        else
+            println("Todo with id '" + todoId + "' has been deleted successfully");
+    }
+
     static void handleLogout() {
         goToMain();
     }
@@ -439,6 +453,10 @@ public class Main {
                 }
                 case SEVEN -> handleUpdateDetails(user);
                 case EIGHT -> {
+                    handleViewAllTodos(user);
+                    handleDeleteATodo(user);
+                }
+                case NINE -> {
                     isRunning = false;
                     handleLogout();
                 }
@@ -471,7 +489,8 @@ public class Main {
                 "Press 5 to search for a Todo\n" +
                 "Press 6 to edit/update a Todo\n" +
                 "Press 7 to edit/update your details\n" +
-                "Press 8 to logout.");
+                "Press 8 to delete a TODO\n" +
+                "Press 9 to logout.");
     }
 
     static void printFindTodoPrompt() {
