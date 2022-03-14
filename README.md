@@ -1,7 +1,6 @@
 # Basic TODO Application
-### [Encentral Solutions](https://www.encentralsolutions.com/) Intern Assessment
 
-Basic TODO Application for Encentral Solutions Internship
+Basic TODO Application API
 
 ## Technologies Used
 - Maven (Project Management)
